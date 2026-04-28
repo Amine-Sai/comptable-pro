@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="نموذج محاسبة وفق النظام المحاسبي المالي الجزائري SCF — فوترة إلكترونية، قيود يومية، دفتر أستاذ، ميزان مراجعة، وقوائم مالية." />
+  <title>RZ Soutnance — المحاسبة وفق SCF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- ═══════════════ LOGIN OVERLAY ═══════════════ -->
+  <!-- <div id="login-overlay"
+    style="position: fixed; inset: 0; background: var(--bg-primary); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px);">
+    <div class="card" style="width: 100%; max-width: 400px; padding: 40px; text-align: center;">
+      <img src="assets/logo.png" alt="محاسب PRO" style="width: 80px; margin-bottom: 16px; border-radius: 50%;">
+      <h2 style="margin-bottom: 8px;">تسجيل الدخول</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">يرجى إدخال بيانات الاعتماد للوصول إلى
+        النظام</p>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group" style="margin-bottom: 16px; text-align: right;">
+          <label>اسم المستخدم</label>
+          <input type="text" id="login-user" placeholder="admin" required />
+        </div>
+        <div class="form-group" style="margin-bottom: 24px; text-align: right;">
+          <label>كلمة المرور</label>
+          <input type="password" id="login-pass" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">دخول النظام</button>
+      </form>
+      <div id="login-error" style="color: var(--accent-rose); font-size: 0.85rem; margin-top: 16px; display: none;">اسم
+        المستخدم أو كلمة المرور غير صحيحة</div>
+    </div>
+  </div> -->
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" style="flex-direction: column; text-align: center; padding: 24px 16px;">
+      <img src="assets/logo.png" alt="محاسب PRO"
+        style="width: 100%; max-width: 160px; margin-bottom: 12px; border-radius: 50%; aspect-ratio: 1/1; object-fit: cover;">
+      <div>
+        <h1>محاسب PRO</h1>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">الرئيسية</div>
+      <div class="nav-item active" data-page="dashboard" id="nav-dashboard">
+        <i class="fas fa-chart-pie"></i> لوحة التحكم
+      </div>
+      <div class="nav-item" data-page="invoices" id="nav-invoices">
+        <i class="fas fa-file-invoice-dollar"></i> الفوترة الإلكترونية
+      </div>
+      <div class="nav-item" data-page="inventory" id="nav-inventory">
+        <i class="fas fa-boxes-stacked"></i> المخزون
+      </div>
+
+      <div class="nav-section-label">المحاسبة</div>
+      <div class="nav-item" data-page="journal" id="nav-journal">
+        <i class="fas fa-book"></i> دفتر اليومية
+      </div>
+      <div class="nav-item" data-page="ledger" id="nav-ledger">
+        <i class="fas fa-scale-balanced"></i> دفتر الأستاذ العام
+      </div>
+      <div class="nav-item" data-page="trial" id="nav-trial">
+        <i class="fas fa-check-double"></i> ميزان المراجعة
+      </div>
+
+      <div class="nav-section-label">التقارير المالية</div>
+      <div class="nav-item" data-page="equity" id="nav-equity">
+        <i class="fas fa-chart-pie"></i> تغير الأموال الخاصة
+      </div>
+      <div class="nav-item" data-page="balancesheet" id="nav-balancesheet">
+        <i class="fas fa-building-columns"></i> الميزانية (المركز المالي)
+      </div>
+      <div class="nav-item" data-page="incomestatement" id="nav-incomestatement">
+        <i class="fas fa-chart-bar"></i> حساب النتائج
+      </div>
+      <div class="nav-item" data-page="cashflow" id="nav-cashflow">
+        <i class="fas fa-money-bill-transfer"></i> جدول سيولة الخزينة
+      </div>
+      <div class="nav-item" data-page="einvoice" id="nav-einvoice">
+        <i class="fas fa-file-invoice"></i> الفاتورة الإلكترونية
+      </div>
+      <div class="nav-item" data-page="debts" id="nav-debts">
+        <i class="fas fa-triangle-exclamation"></i> تنبيهات الديون
+        <span class="nav-badge" id="debt-badge" style="display:none;">0</span>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="main-content">
+
+    <header class="header">
+      <div class="header-title">
+        <h2 id="page-title">لوحة التحكم</h2>
+        <p id="page-subtitle">نظرة عامة على بياناتك المحاسبية</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon" onclick="showResetModal()" title="إعادة تعيين"><i
+            class="fas fa-rotate-left"></i></button>
+      </div>
+    </header>
+
+    <!-- ═══════════ لوحة التحكم ═══════════ -->
+    <section class="page active" id="page-dashboard">
+      <div class="stats-grid" id="dashboard-stats"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-clock-rotate-left" style="margin-left:8px;color:var(--accent-indigo-light)"></i>آخر
+              القيود اليومية</h3>
+            <button onclick="openManualModal()" class="btn btn-primary btn-sm">
+              <i class="fas fa-plus"></i> قيد يدوي
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-wrapper" id="dashboard-journal"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-bell" style="margin-left:8px;color:var(--accent-rose)"></i>تنبيهات الديون</h3>
+          </div>
+          <div class="card-body" id="dashboard-debts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ الفوترة الإلكترونية ═══════════ -->
+    <section class="page" id="page-invoices">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-plus-circle" style="margin-left:8px;color:var(--accent-emerald)"></i>إنشاء فاتورة</h3>
+          </div>
+          <div class="card-body">
+            <form id="invoice-form" onsubmit="return false;">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="inv-number">رقم الفاتورة</label>
+                  <input type="text" id="inv-number" readonly />
+                </div>
+                <div class="form-group">
+                  <label for="inv-date">التاريخ</label>
+                  <input type="date" id="inv-date" />
+                </div>
+                <div class="form-group">
+                  <label for="inv-client">اسم العميل</label>
+                  <input type="text" id="inv-client" placeholder="مثال: شركة بجاية للاستيراد" required />
+                </div>
+                <div class="form-group">
+                  <label for="inv-status">حالة الدفع</label>
+                  <select id="inv-status">
+                    <option value="unpaid">غير مدفوعة (آجل)</option>
+                    <option value="paid">مدفوعة (نقداً)</option>
+                  </select>
+                </div>
+              </div>
+              <h4 style="margin:24px 0 12px;font-size:0.88rem;font-weight:600;color:var(--text-secondary);">
+                <i class="fas fa-list" style="margin-left:6px;"></i>بنود الفاتورة
+              </h4>
+              <div class="table-wrapper">
+                <table class="line-items-table" id="line-items">
+                  <thead>
+                    <tr>
+                      <th>المنتج</th>
+                      <th style="width:80px;">الكمية</th>
+                      <th style="width:120px;">سعر الوحدة (د.ج)</th>
+                      <th style="width:120px;">المبلغ</th>
+                      <th style="width:40px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="line-items-body"></tbody>
+                </table>
+              </div>
+              <button type="button" class="btn btn-ghost btn-sm" style="margin-top:12px;" onclick="addLineItem()">
+                <i class="fas fa-plus"></i> إضافة بند
+              </button>
+
+              <div class="inv-totals">
+                <div class="inv-totals-row">
+                  <label>المبلغ خارج الرسم (HT)</label>
+                  <span class="val" id="inv-montant-ht">0.00 د.ج</span>
+                </div>
+                <div class="inv-totals-row" style="border-bottom:1px solid var(--border);padding-bottom:10px;">
+                  <label>التخفيض التجاري (%)</label>
+                  <input type="number" id="inv-remise-comm" min="0" max="100" step="0.1" value="0"
+                    oninput="calcInvTotals()" />
+                </div>
+                <div class="inv-totals-row">
+                  <label>المبلغ بعد التخفيض التجاري</label>
+                  <span class="val" id="inv-apres-comm">0.00 د.ج</span>
+                </div>
+                <div class="inv-totals-row" style="border-bottom:1px solid var(--border);padding-bottom:10px;">
+                  <label>التخفيض المالي (%)</label>
+                  <input type="number" id="inv-remise-fin" min="0" max="100" step="0.1" value="0"
+                    oninput="calcInvTotals()" />
+                </div>
+                <div class="inv-totals-row">
+                  <label>المبلغ الصافي خارج الرسم (Net HT)</label>
+                  <span class="val" id="inv-net-ht" style="color:var(--accent-indigo-light);font-weight:700;">0.00
+                    د.ج</span>
+                </div>
+                <div class="inv-totals-row" style="border-bottom:1px solid var(--border);padding-bottom:10px;">
+                  <label>الرسم على القيمة المضافة TVA (%)</label>
+                  <input type="number" id="inv-tva" min="0" max="100" step="0.1" value="19" oninput="calcInvTotals()" />
+                </div>
+                <div class="inv-totals-row">
+                  <label>مبلغ TVA</label>
+                  <span class="val" id="inv-tva-amount">0.00 د.ج</span>
+                </div>
+                <div class="inv-totals-row highlight"
+                  style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);">
+                  <label style="color:var(--accent-indigo-light);font-size:1rem;">المبلغ المتضمن للرسم (TTC)</label>
+                  <span class="val" id="inv-ttc" style="color:var(--accent-indigo-light);font-size:1.2rem;">0.00
+                    د.ج</span>
+                </div>
+              </div>
+
+              <div
+                style="display:flex;justify-content:flex-start;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
+                <button type="button" class="btn btn-primary" onclick="saveInvoice()">
+                  <i class="fas fa-paper-plane"></i> حفظ وترحيل للقيد اليومي
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-file-lines" style="margin-left:8px;color:var(--accent-violet)"></i>سجل الفواتير</h3>
+          </div>
+          <div class="card-body">
+            <div class="table-wrapper" id="invoice-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ المخزون ═══════════ -->
+    <section class="page" id="page-inventory">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-cube" style="margin-left:8px;color:var(--accent-cyan)"></i>إضافة / تحديث منتج</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="prod-name">اسم المنتج</label>
+                <input type="text" id="prod-name" placeholder="مثال: حاسوب محمول HP ProBook" />
+              </div>
+              <div class="form-group">
+                <label for="prod-qty">الكمية</label>
+                <input type="number" id="prod-qty" min="0" value="0" />
+              </div>
+              <div class="form-group">
+                <label for="prod-cost">سعر التكلفة (د.ج)</label>
+                <input type="number" id="prod-cost" min="0" step="0.01" value="0" />
+              </div>
+              <div class="form-group">
+                <label for="prod-price">سعر البيع (د.ج)</label>
+                <input type="number" id="prod-price" min="0" step="0.01" value="0" />
+              </div>
+            </div>
+            <div class="flex-end">
+              <button class="btn btn-success" onclick="addProduct()"><i class="fas fa-plus"></i> إضافة المنتج</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-warehouse" style="margin-left:8px;color:var(--accent-amber)"></i>نظرة عامة على المخزون
+            </h3>
+          </div>
+          <div class="card-body" id="inventory-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ دفتر اليومية ═══════════ -->
+    <section class="page" id="page-journal">
+      <div class="report-download-bar">
+        <div class="report-section-title"><i class="fas fa-book-open"></i> دفتر اليومية (القيد اليومي)</div>
+        <button class="btn btn-primary" onclick="openManualModal()">
+          <i class="fas fa-plus"></i> إضافة قيد يدوي جديد
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="table-wrapper" id="journal-table"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ دفتر الأستاذ العام ═══════════ -->
+    <section class="page" id="page-ledger">
+      <div class="report-download-bar">
+        <div class="report-section-title"><i class="fas fa-scale-balanced"></i> دفتر الأستاذ العام</div>
+        <button class="btn-excel" onclick="exportLedgerExcel()"><i class="fas fa-file-excel"></i> تحميل Excel</button>
+      </div>
+      <div id="ledger-content"></div>
+    </section>
+
+    <!-- ═══════════ ميزان المراجعة ═══════════ -->
+    <section class="page" id="page-trial">
+      <div class="report-download-bar">
+        <div class="report-section-title"><i class="fas fa-check-double"></i> ميزان المراجعة</div>
+        <button class="btn-excel" onclick="exportTrialBalanceExcel()"><i class="fas fa-file-excel"></i> تحميل
+          Excel</button>
+      </div>
+      <div class="card">
+        <div class="card-body" id="trial-content"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ تغير الأموال الخاصة ═══════════ -->
+    <section class="page" id="page-equity">
+      <div class="report-download-bar">
+        <div class="report-section-title"><i class="fas fa-chart-pie"></i> جدول تغير الأموال الخاصة</div>
+        <button class="btn-excel" onclick="exportEquityStatementExcel()"><i class="fas fa-file-excel"></i> تحميل
+          Excel</button>
+      </div>
+      <div id="equity-content"></div>
+    </section>
+
+    <!-- ═══════════ الميزانية ═══════════ -->
+    <section class="page" id="page-balancesheet">
+      <div class="report-download-bar">
+        <div class="report-section-title"><i class="fas fa-building-columns"></i> قائمة المركز المالي (الميزانية)</div>
+        <button class="btn-excel" onclick="exportBalanceSheetExcel()"><i class="fas fa-file-excel"></i> تحميل
+          Excel</button>
+      </div>
+      <div id="balancesheet-content"></div>
+    </section>
+
+    <!-- ═══════════ حساب النتائج ═══════════ -->
+    <section class="page" id="page-incomestatement">
+      <div class="report-download-bar">
+        <div class="report-section-title">حساب النتائج</div>
+        <button class="btn-excel" onclick="exportIncomeStatementExcel()"><i class="fas fa-file-excel"></i> تحميل
+          Excel</button>
+      </div>
+      <div id="incomestatement-content"></div>
+    </section>
+
+    <!-- ═══════════ جدول سيولة الخزينة ═══════════ -->
+    <section class="page" id="page-cashflow">
+      <div class="report-download-bar">
+        <div class="report-section-title"><i class="fas fa-money-bill-transfer"></i> جدول سيولة الخزينة</div>
+        <button class="btn-excel" onclick="exportCashFlowExcel()"><i class="fas fa-file-excel"></i> تحميل Excel</button>
+      </div>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="cf-indirect-btn" onclick="switchCashFlowMethod('indirect')"> الطريقة غير
+          المباشرة</button>
+        <button class="toggle-btn" id="cf-direct-btn" onclick="switchCashFlowMethod('direct')"> الطريقة
+          المباشرة</button>
+      </div>
+      <div id="cashflow-content"></div>
+    </section>
+
+    <!-- ═══════════ الفاتورة الإلكترونية ═══════════ -->
+    <section class="page" id="page-einvoice">
+      <div class="report-download-bar">
+        <div class="report-section-title"><i class="fas fa-file-invoice"></i> الفاتورة الإلكترونية</div>
+        <button class="btn-excel" onclick="exportEInvoiceExcel()" id="einvoice-export-btn" style="display:none;"><i
+            class="fas fa-file-excel"></i> تحميل Excel</button>
+      </div>
+      <div class="einvoice-selector">
+        <label style="font-weight:600;color:var(--text-secondary);">اختر الفاتورة:</label>
+        <select id="einvoice-select" onchange="renderEInvoiceDoc()">
+          <option value="">— اختر فاتورة —</option>
+        </select>
+      </div>
+      <div id="einvoice-content"></div>
+    </section>
+
+    <!-- ═══════════ تنبيهات الديون ═══════════ -->
+    <section class="page" id="page-debts">
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-triangle-exclamation" style="margin-left:8px;color:var(--accent-rose)"></i>الفواتير غير
+            المدفوعة — متابعة الديون</h3>
+        </div>
+        <div class="card-body" id="debts-content"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Reset Modal -->
+  <div class="modal-overlay hidden" id="reset-modal">
+    <div class="modal">
+      <h3><i class="fas fa-triangle-exclamation" style="color:var(--accent-rose);margin-left:8px;"></i>إعادة تعيين جميع
+        البيانات؟</h3>
+      <p style="color:var(--text-secondary);font-size:0.9rem;">سيتم حذف جميع الفواتير والقيود اليومية والمخزون والبيانات
+        المحاسبية نهائياً.</p>
+      <div class="modal-actions">
+        <button class="btn btn-danger" onclick="resetAllData()"><i class="fas fa-trash"></i> حذف الكل</button>
+        <button class="btn btn-ghost" onclick="closeModal('reset-modal')">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Entry Modal -->
+  <div class="modal-overlay hidden" id="manual-modal">
+    <div class="modal" style="max-width: 600px;">
+      <div class="card-header" style="border:none; padding:0 0 20px 0;">
+        <h3><i class="fas fa-plus-circle" style="color:var(--accent-indigo); margin-left:8px;"></i>إضافة قيد يدوي جديد
+        </h3>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>التاريخ</label>
+          <input type="date" id="manual-date">
+        </div>
+        <div class="form-group">
+          <label>المرجع</label>
+          <input type="text" id="manual-ref" placeholder="رقم القيد أو السند">
+        </div>
+        <div class="form-group full">
+          <label>البيان / الوصف</label>
+          <input type="text" id="manual-desc" placeholder="شرح موجز للعملية">
+        </div>
+      </div>
+
+      <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:12px;">
+        <div id="manual-lines">
+          <div class="form-grid manual-line" style="margin-bottom:10px; grid-template-columns: 2fr 1fr 1fr 40px;">
+            <div class="form-group">
+              <label>الحساب</label>
+              <select class="account"></select>
+            </div>
+            <div class="form-group">
+              <label>مدين</label>
+              <input type="number" class="debit" value="0">
+            </div>
+            <div class="form-group">
+              <label>دائن</label>
+              <input type="number" class="credit" value="0">
+            </div>
+            <div class="form-group" style="justify-content: flex-end;">
+              <button class="btn btn-ghost" style="padding:10px;" onclick="this.closest('.manual-line').remove()"><i
+                  class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="addManualLine()"><i class="fas fa-plus"></i> إضافة سطر</button>
+      </div>
+
+      <div class="modal-actions" style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="saveManualEntry()"><i class="fas fa-save"></i> حفظ القيد</button>
+        <button class="btn btn-ghost" onclick="closeModal('manual-modal')">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Core App Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/render-modules.js"></script>
+  <script src="js/export-modules.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+
+</html>
